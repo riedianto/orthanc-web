@@ -1,0 +1,12 @@
+{
+  "name": "orthanc-auth-proxy",
+  "version": "1.0.0",
+  "description": "Reverse proxy with custom premium login page for Orthanc",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  }
+}

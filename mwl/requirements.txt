@@ -1,0 +1,4 @@
+pydicom>=2.4.0
+pynetdicom>=2.0.0
+requests>=2.28.0
+pyodbc>=5.1.0

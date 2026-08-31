@@ -1,0 +1,108 @@
+{
+  "Name" : "Orthanc Server SIMRS",
+  "StorageDirectory" : "/var/lib/orthanc/db",
+  "IndexDirectory" : "/var/lib/orthanc/db",
+  "TemporalUnstableInterval" : 60,
+
+  "StorageCompression" : true,
+  "ConcurrentJobs" : 4,
+  "MaximumStorageCacheSize" : 512,
+
+  "HttpPort" : 8042,
+  "DicomPort" : 4242,
+  "DicomAet" : "ORTHANC",
+  "DicomCheckCalledAet" : true,
+  "DicomAlwaysAllowFindWorklist" : true,
+  "DicomInstitutionName" : "RSUD SIMRS",
+
+  "RemoteAccessAllowed" : true,
+  "AuthenticationEnabled" : true,
+  "HttpCors" : true,
+
+  "RegisteredUsers" : {
+    "orthanc" : "${ORTHANC_PASSWORD}"
+  },
+
+  "PostgreSQL" : {
+    "Host" : "orthanc-postgres",
+    "Port" : 5432,
+    "Database" : "orthanc",
+    "Username" : "orthanc",
+    "Password" : "Orthanc2024!"
+  },
+
+  "DicomModalities" : {
+    "MOD_XRAY" : [ "MOD_XRAY", "192.168.1.100", 104 ],
+    "MOD_CT" : [ "MOD_CT", "192.168.1.101", 104 ],
+    "MOD_USG" : [ "MOD_USG", "192.168.1.102", 104 ]
+  },
+
+  "DicomWeb" : {
+    "Enable" : true,
+    "Root" : "/dicom-web/"
+  },
+
+  "Worklists" : {
+    "Enable" : true,
+    "Database" : "/var/lib/orthanc/worklists"
+  },
+
+  "WebViewer" : {
+    "Enable" : true
+  },
+
+  "OrthancExplorer2" : {
+    "Enable" : true,
+    "IsDefaultOrthancUI" : true,
+    "UiOptions" : {
+      "ViewersOrdering" : [
+        "osimis-web-viewer"
+      ]
+    }
+  },
+
+  "Wsi" : {
+    "Enable" : true,
+    "LargeImageMemoryLimit" : 512,
+    "Maxcores" : 2,
+    "Threads" : 4
+  },
+
+  "Authorization" : {
+    "Enable" : false
+  },
+
+  "LuaScripts" : [
+    "/etc/orthanc/scripts/simrs_notifier.lua"
+  ],
+
+  "PythonScripts" : [
+    "/etc/orthanc/scripts/simrs_notifier.py"
+  ],
+
+  "Jobs" : {
+    "Enable" : true,
+    "MaxCompletedJobs" : 10,
+    "MaxJobs" : 100
+  },
+
+  "LeanAndDeleteOn" : true,
+
+  "QueryRetrieve" : {
+    "Enable" : true
+  },
+
+  "DicomCStore" : {
+    "Enable" : true
+  },
+
+  "Verbosity" : "default",
+  "TraceEnabled" : false,
+
+  "HttpResponseHeaders" : {
+    "Access-Control-Allow-Origin" : "*",
+    "Access-Control-Allow-Credentials" : "true",
+    "Access-Control-Allow-Methods" : "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers" : "Authorization, Content-Type, Accept, Origin"
+  }
+}

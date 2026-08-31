@@ -1,0 +1,36 @@
+# =============================================
+# ORTHANC PACS - Git Ignore Rules
+# =============================================
+
+# --- WORKLIST DATA (data pasien, jangan masuk repo) ---
+worklists/order_*.json
+worklists/order_*.wl
+worklists/completed_worklist.json
+worklists/system_settings.json
+
+# Tapi README.md di worklists boleh masuk
+!worklists/README.md
+
+# --- SECRETS & ENVIRONMENT ---
+.env
+*.env.local
+*.env.production
+
+# --- ORTHANC DATABASE & STORAGE (data besar) ---
+db/
+orthanc-db/
+*.db
+
+# --- DOCKER BUILD ARTIFACTS ---
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+node_modules/
+
+# --- LOGS ---
+*.log
+logs/
+
+# --- OS FILES ---
+.DS_Store
+Thumbs.db
