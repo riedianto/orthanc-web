@@ -12,7 +12,7 @@ function OnStoredInstance(instanceId, tags, metadata, origin)
    -- 1. Read target webhook URL and POST notification to SIMRS
    local webhookUrl = os.getenv("SIMRS_WEBHOOK_URL")
    if not webhookUrl or webhookUrl == "" then
-      webhookUrl = "http://simrs.local/api/radiology/notify-stored"
+      webhookUrl = "http://192.168.188.207:8090/api/radiology/notify-stored"
    end
 
    local payload = string.format([[{"instanceId":"%s","patientId":"%s","patientName":"%s","studyInstanceUid":"%s","accessionNumber":"%s","modality":"%s","sopInstanceUid":"%s"}]],
@@ -20,6 +20,14 @@ function OnStoredInstance(instanceId, tags, metadata, origin)
 
    pcall(function()
       HttpPost(webhookUrl, payload)
+   end)
+
+   -- 1b. Forward the received instance to the SATUSEHAT DICOM Router.
+   -- Citra tetap disimpan di PACS lokal, dan salinannya dikirim ke router
+   -- yang akan meneruskannya ke SATUSEHAT (cek ServiceRequest -> NIDR -> ImagingStudy).
+   local satusehatModality = os.getenv("SATUSEHAT_ROUTER_MODALITY") or "SATUSEHAT"
+   pcall(function()
+      SendToModality(instanceId, satusehatModality)
    end)
 
    -- 2. Auto-remove worklist item once DICOM image is received via C-STORE (SCAN_COMPLETED)

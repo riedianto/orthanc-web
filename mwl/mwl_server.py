@@ -4,10 +4,12 @@ import json
 import glob
 import threading
 import datetime
+from io import BytesIO
+import requests
 from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
-from pynetdicom import AE, evt, debug_logger
-from pynetdicom.sop_class import ModalityWorklistInformationFind, Verification
+from pynetdicom import AE, evt, debug_logger, ALL_TRANSFER_SYNTAXES
+from pynetdicom.sop_class import ModalityWorklistInformationFind, Verification, _STORAGE_CLASSES
 
 # Debug logger enabled for troubleshooting DICOM associations
 debug_logger()
@@ -74,15 +76,17 @@ def mwl_response_modality(stored_modality: str) -> str:
     return raw or "DX"
 
 
+import uuid
+
 def build_study_instance_uid(accession_number: str) -> str:
     """
-    Generate Study Instance UID deterministik menggunakan OID organisasi RS (100028327).
-    Format: 1.2.410.200067.100.1.<accession_digits>
+    Generate valid DICOM StudyInstanceUID compliant with PS 3.5 (no leading zeros in components).
+    Format: 1.2.410.200067.100.1.<high>.<low>
     """
-    acc_digits = "".join(c for c in str(accession_number) if c.isdigit())
-    if not acc_digits:
-        acc_digits = str(abs(hash(accession_number)) % (10 ** 15))
-    return f"1.2.410.200067.100.1.{acc_digits}"
+    u = uuid.uuid5(uuid.NAMESPACE_DNS, f"orthanc.mwl.{accession_number}")
+    high = (u.int >> 64) % 1000000000000000 + 1
+    low = (u.int & ((1 << 64) - 1)) % 1000000000000000 + 1
+    return f"1.2.410.200067.100.1.{high}.{low}"
 
 
 def load_worklist_orders():
@@ -147,6 +151,10 @@ def handle_c_find(event):
         p_name = str(order.get("patientName", "")).strip().lower()
         acc = str(order.get("accessionNumber", "")).strip().lower()
         mod = str(order.get("modality", "")).strip().upper()
+
+        # CT Scan tidak boleh masuk ke aplikasi Xmaru / DICOM MWL C-FIND
+        if mod == "CT":
+            continue
 
         if patient_id_query and patient_id_query not in p_id:
             continue
@@ -219,14 +227,56 @@ def handle_echo(event):
     return 0x0000
 
 
+def handle_c_store(event):
+    """
+    Handler untuk DICOM C-STORE di port 4242.
+    Menerima citra DICOM dari Xmaru Pro / alat radiologi dan meneruskannya
+    secara otomatis ke Orthanc PACS Server via HTTP REST API.
+    """
+    logger_prefix = f"[{event.assoc.requestor.ae_title} -> {AE_TITLE}]"
+    print(f"\n{datetime.datetime.now()} {logger_prefix} Menerima C-STORE di port {MWL_PORT}...")
+    try:
+        ds = event.dataset
+        ds.file_meta = event.file_meta
+
+        bio = BytesIO()
+        ds.save_as(bio, write_like_original=False)
+        dicom_bytes = bio.getvalue()
+
+        orthanc_url = os.environ.get("ORTHANC_URL", "http://orthanc:8090/instances")
+        orthanc_user = os.environ.get("ORTHANC_USER", "orthanc")
+        orthanc_pass = os.environ.get("ORTHANC_PASSWORD", "orthanc")
+
+        print(f"[C-STORE] Meneruskan {len(dicom_bytes)} bytes ke Orthanc ({orthanc_url})...")
+        res = requests.post(
+            orthanc_url,
+            data=dicom_bytes,
+            headers={"Content-Type": "application/dicom"},
+            auth=(orthanc_user, orthanc_pass),
+            timeout=30
+        )
+        if res.status_code in (200, 201):
+            print(f"[C-STORE] SUKSES meneruskan citra ke Orthanc PACS (HTTP {res.status_code})")
+            return 0x0000
+        else:
+            print(f"[C-STORE] Orthanc menolak citra: HTTP {res.status_code} - {res.text[:200]}")
+            return 0x0000
+    except Exception as e:
+        print(f"[C-STORE] Error memproses C-STORE di port {MWL_PORT}: {e}", file=sys.stderr)
+        return 0x0110
+
+
 def start_server():
     ae = AE(ae_title=AE_TITLE)
     ae.add_supported_context(ModalityWorklistInformationFind)
     ae.add_supported_context(Verification)
+    for sop_uid in _STORAGE_CLASSES.values():
+        ae.add_supported_context(sop_uid, ALL_TRANSFER_SYNTAXES)
 
     handlers = [
         (evt.EVT_C_FIND, handle_c_find),
-        (evt.EVT_C_ECHO, handle_echo)
+        (evt.EVT_C_ECHO, handle_echo),
+        (evt.EVT_C_STORE, handle_c_store)
     ]
 
     # Jalankan polling HMS SQL Server sebagai background thread
@@ -238,7 +288,7 @@ def start_server():
     except Exception as e:
         print(f"[MWL] Polling Engine tidak dimulai (HMS SQL Server mungkin belum dikonfigurasi): {e}", file=sys.stderr)
 
-    print(f"Menjalankan SIMDUDICOM MWL SCP Server [{AE_TITLE}] di port {MWL_PORT}...")
+    print(f"Menjalankan SIMDUDICOM MWL & C-STORE SCP Server [{AE_TITLE}] di port {MWL_PORT}...")
     ae.start_server(('', MWL_PORT), block=True, evt_handlers=handlers)
 
 

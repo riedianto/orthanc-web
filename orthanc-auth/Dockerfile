@@ -9,7 +9,7 @@ COPY server.js ./
 COPY views ./views
 
 ENV PROXY_PORT=8090
-ENV UPSTREAM=http://orthanc:8042
+ENV UPSTREAM=http://orthanc:8090
 
 EXPOSE 8090
 

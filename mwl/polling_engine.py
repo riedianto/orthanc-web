@@ -94,10 +94,14 @@ def get_existing_accessions() -> set:
 
 
 def build_study_instance_uid(accession_number: str) -> str:
-    acc_digits = "".join(c for c in str(accession_number) if c.isdigit())
-    if not acc_digits:
-        acc_digits = str(abs(hash(accession_number)) % (10 ** 15))
-    return f"1.2.410.200067.100.1.{acc_digits}"
+    """
+    Generate valid DICOM StudyInstanceUID compliant with PS 3.5 (no leading zeros in components).
+    Format: 1.2.410.200067.100.1.<high>.<low>
+    """
+    u = uuid.uuid5(uuid.NAMESPACE_DNS, f"orthanc.mwl.{accession_number}")
+    high = (u.int >> 64) % 1000000000000000 + 1
+    low = (u.int & ((1 << 64) - 1)) % 1000000000000000 + 1
+    return f"1.2.410.200067.100.1.{high}.{low}"
 
 
 def save_order_wl(acc: str, order: dict):
@@ -157,14 +161,25 @@ def save_order_wl(acc: str, order: dict):
 
 
 def save_order_json(acc: str, order: dict):
-    """Simpan order sebagai file JSON & DICOM .wl ke WORKLISTS_DIR."""
+    """Simpan order sebagai file JSON & DICOM .wl ke WORKLISTS_DIR (CT Scan dilewati untuk file .wl agar tidak masuk Xmaru)."""
     safe_acc = acc.replace("/", "_").replace("\\", "_").replace(" ", "_")
     filename = f"order_{safe_acc}.json"
     filepath = os.path.join(WORKLISTS_DIR, filename)
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(order, f, ensure_ascii=False, indent=2)
-    save_order_wl(acc, order)
-    print(f"[Polling] Order disimpan: {filename} & order_{safe_acc}.wl | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
+
+    wl_filepath = os.path.join(WORKLISTS_DIR, f"order_{safe_acc}.wl")
+    if order.get("modality") == "CT":
+        if os.path.exists(wl_filepath):
+            try:
+                os.remove(wl_filepath)
+            except Exception:
+                pass
+        print(f"[Polling] Order disimpan: {filename} (CT Scan: file .wl dilewati agar tidak masuk Xmaru) | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
+    else:
+        save_order_wl(acc, order)
+        print(f"[Polling] Order disimpan: {filename} & order_{safe_acc}.wl | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
+
 
 
 def poll_new_orders():

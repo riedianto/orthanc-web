@@ -8,12 +8,18 @@
   "ConcurrentJobs" : 4,
   "MaximumStorageCacheSize" : 512,
 
-  "HttpPort" : 8042,
+  "HttpPort" : 8090,
   "DicomPort" : 4242,
   "DicomAet" : "ORTHANC",
-  "DicomCheckCalledAet" : true,
+  "DicomCheckCalledAet" : false,
+  "DicomAlwaysAllowEcho" : true,
+  "DicomAlwaysAllowStore" : true,
+  "DicomAlwaysAllowFind" : true,
+  "DicomAlwaysAllowGet" : true,
+  "DicomAlwaysAllowMove" : true,
   "DicomAlwaysAllowFindWorklist" : true,
-  "DicomInstitutionName" : "RSUD SIMRS",
+  "UnknownSopClassAccepted" : true,
+  "DicomInstitutionName" : "RSU Artha Medica",
 
   "RemoteAccessAllowed" : true,
   "AuthenticationEnabled" : true,
@@ -32,9 +38,7 @@
   },
 
   "DicomModalities" : {
-    "MOD_XRAY" : [ "MOD_XRAY", "192.168.1.100", 104 ],
-    "MOD_CT" : [ "MOD_CT", "192.168.1.101", 104 ],
-    "MOD_USG" : [ "MOD_USG", "192.168.1.102", 104 ]
+    "SATUSEHAT" : [ "DCMROUTER", "dicom-router", 11112 ]
   },
 
   "DicomWeb" : {
@@ -96,8 +100,8 @@
     "Enable" : true
   },
 
-  "Verbosity" : "default",
-  "TraceEnabled" : false,
+  "Verbosity" : "verbose",
+  "TraceEnabled" : true,
 
   "HttpResponseHeaders" : {
     "Access-Control-Allow-Origin" : "*",

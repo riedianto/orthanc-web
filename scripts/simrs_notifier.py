@@ -11,7 +11,7 @@ try:
     def OnStoredInstance(dicom, instanceId):
         try:
             tags = json.loads(orthanc.GetInstanceTags(instanceId))
-            webhook_url = os.environ.get("SIMRS_WEBHOOK_URL", "http://simrs.local/api/radiology/notify-stored")
+            webhook_url = os.environ.get("SIMRS_WEBHOOK_URL", "http://192.168.188.207:8090/api/radiology/notify-stored")
             accession_number = tags.get("AccessionNumber", "")
 
             payload = {

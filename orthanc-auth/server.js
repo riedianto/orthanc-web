@@ -265,7 +265,7 @@ function loadSystemSettings() {
     hmsUser: fileSettings.hmsUser || process.env.HMS_SQLSERVER_USER || 'hmsdb',
     hmsPassword: fileSettings.hmsPassword || process.env.HMS_SQLSERVER_PASSWORD || 'kisahkita',
     storagePath: fileSettings.storagePath || process.env.ORTHANC_STORAGE_PATH || '/var/lib/orthanc/db',
-    webhookUrl: fileSettings.webhookUrl || process.env.SIMRS_WEBHOOK_URL || 'http://simrs.local/api/radiology/notify-stored',
+    webhookUrl: fileSettings.webhookUrl || process.env.SIMRS_WEBHOOK_URL || 'http://192.168.188.207:8090/api/radiology/notify-stored',
     pollInterval: fileSettings.pollInterval || process.env.POLL_INTERVAL_SECONDS || '5',
     pollDaysBack: fileSettings.pollDaysBack || process.env.POLL_DAYS_BACK || '1'
   };
