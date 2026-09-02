@@ -4,7 +4,7 @@
   "IndexDirectory" : "/var/lib/orthanc/db",
   "TemporalUnstableInterval" : 60,
 
-  "StorageCompression" : true,
+  "StorageCompression" : false,
   "ConcurrentJobs" : 4,
   "MaximumStorageCacheSize" : 512,
 

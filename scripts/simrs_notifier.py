@@ -8,6 +8,23 @@ import urllib.request
 try:
     import orthanc
 
+    def record_dismissed_worklist(worklists_dir, accession_number):
+        """Catat accession yang sudah selesai ke completed_worklist.json (blacklist)."""
+        bl_file = os.path.join(worklists_dir, "completed_worklist.json")
+        try:
+            dismissed = []
+            if os.path.exists(bl_file):
+                with open(bl_file, "r", encoding="utf-8") as f:
+                    dismissed = json.load(f).get("dismissed", [])
+            if accession_number not in dismissed:
+                dismissed.append(accession_number)
+                with open(bl_file, "w", encoding="utf-8") as f:
+                    json.dump({"dismissed": dismissed}, f, indent=2, ensure_ascii=False)
+                orthanc.LogWarning(f"Worklist {accession_number} dicatat sebagai SELESAI (tidak akan ditarik lagi)")
+        except Exception as e:
+            orthanc.LogError(f"Gagal catat dismissed worklist {accession_number}: {str(e)}")
+
+
     def OnStoredInstance(dicom, instanceId):
         try:
             tags = json.loads(orthanc.GetInstanceTags(instanceId))
@@ -44,6 +61,9 @@ try:
                             orthanc.LogWarning(f"Worklist order_{safe_acc}{ext} auto-removed (SCAN_COMPLETED)")
                         except Exception:
                             pass
+
+                # Catat ke blacklist agar polling tidak membuatnya ulang
+                record_dismissed_worklist(worklists_dir, accession_number)
 
         except Exception as e:
             orthanc.LogError(f"SIMRS Webhook notification error: {str(e)}")

@@ -133,7 +133,7 @@ def save_order_wl(acc: str, order: dict):
 
         doc_name = str(order.get("doctorName", "DR. SIMRS PHYSICIAN"))
         ds.ReferringPhysicianName = doc_name
-        ds.InstitutionName = str(order.get("institutionName", os.environ.get("INSTITUTION_NAME", "RSUD SIMRS")))
+        ds.InstitutionName = str(order.get("institutionName", os.environ.get("INSTITUTION_NAME", "RSU Artha Medica")))
         ds.StudyInstanceUID = study_uid
 
         sps_ds = Dataset()
@@ -186,8 +186,7 @@ def poll_new_orders():
     """
     Query HMS SQL Server untuk order radiologi baru (dari N hari terakhir),
     lalu simpan sebagai JSON worklist jika belum ada.
-    Identik dengan polling_engine.py SIMDUDICOM, tapi output ke file JSON
-    bukan ke database bridge.
+    Output order radiologi baru ke file JSON worklist.
     """
     conn = None
     try:
@@ -197,7 +196,7 @@ def poll_new_orders():
         # Ambil accession yang sudah ada agar tidak duplikat
         existing_accessions = get_existing_accessions()
 
-        # Query order dari HMS (identik dengan SIMDUDICOM)
+        # Query order dari HMS
         sql = f"""
             SELECT
                 hr.noradio,

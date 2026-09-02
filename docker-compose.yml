@@ -1,12 +1,38 @@
 services:
+  dicom-receiver:
+    build: ./dicom_receiver
+    container_name: dicom-receiver
+    restart: unless-stopped
+    ports:
+      - "4242:4242"
+    environment:
+      - RECEIVER_AE_TITLE=${DICOM_RECEIVER_AE_TITLE:-ORTHANC}
+      - DICOM_STORE_PORT=4242
+      - ORTHANC_DICOM_HOST=orthanc
+      - ORTHANC_DICOM_PORT=4242
+      - ORTHANC_DICOM_AET=${ORTHANC_AET:-ORTHANC}
+      - WORKLISTS_DIR=/var/lib/orthanc/worklists
+      - POSTGRES_HOST=orthanc-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./worklists:/var/lib/orthanc/worklists:ro
+    depends_on:
+      orthanc-postgres:
+        condition: service_healthy
+    networks:
+      - orthanc-network
+
   orthanc:
     image: orthancteam/orthanc:latest
     container_name: orthanc-server
     restart: unless-stopped
     ports:
-      - "4242:4242"
+      - "4243:4242"
     volumes:
-      - orthanc-storage:/var/lib/orthanc/db
+      - ${LOCAL_DICOM_STORAGE_PATH:-./storage/dicom}:/var/lib/orthanc/db
       - ./orthanc.json:/etc/orthanc/orthanc.json:ro
       - ./scripts:/etc/orthanc/scripts:ro
       - ./worklists:/var/lib/orthanc/worklists
@@ -101,7 +127,6 @@ services:
       - orthanc-network
 
 volumes:
-  orthanc-storage:
   orthanc-pgdata:
   satusehat-router-in:
 

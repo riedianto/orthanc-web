@@ -21,6 +21,9 @@ db/
 orthanc-db/
 *.db
 
+# --- DICOM storage (bind host) ---
+storage/
+
 # --- DOCKER BUILD ARTIFACTS ---
 **/__pycache__/
 **/*.pyc

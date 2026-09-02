@@ -39,7 +39,7 @@ def pad_dicom_pn(value: str, width: int = 32) -> str:
 
 
 def format_simrs_physician_name(name: str, max_component_len: int = 64) -> str:
-    """Nama dokter perujuk: pertahankan prefix DR. seperti worklist Orthanc SIMDUDICOM."""
+    """Nama dokter perujuk: pertahankan prefix DR. seperti worklist Orthanc."""
     if not name:
         return ""
     text = " ".join(str(name).strip().split()).upper()
@@ -288,7 +288,7 @@ def start_server():
     except Exception as e:
         print(f"[MWL] Polling Engine tidak dimulai (HMS SQL Server mungkin belum dikonfigurasi): {e}", file=sys.stderr)
 
-    print(f"Menjalankan SIMDUDICOM MWL & C-STORE SCP Server [{AE_TITLE}] di port {MWL_PORT}...")
+    print(f"Menjalankan MWL & C-STORE SCP Server [{AE_TITLE}] di port {MWL_PORT}...")
     ae.start_server(('', MWL_PORT), block=True, evt_handlers=handlers)
 
 
