@@ -131,6 +131,75 @@
       background: rgba(248, 113, 113, 0.3);
     }
 
+    /* Blacklist list */
+    .blacklist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .blacklist-empty {
+      padding: 32px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .blacklist-empty i {
+      font-size: 36px;
+      opacity: 0.4;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .blacklist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .blacklist-item .bl-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .blacklist-item .bl-info i {
+      color: var(--accent-orange);
+      flex-shrink: 0;
+    }
+
+    .blacklist-item .bl-acc {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .blacklist-note {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .blacklist-note i {
+      color: var(--accent-blue);
+    }
+
     /* Container */
     .container {
       max-width: 1280px;
@@ -527,6 +596,10 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-secondary" onclick="openBlacklistModal()">
+        <i class="fa-solid fa-rotate-left" style="color: var(--accent-orange);"></i>
+        <span>Pulihkan Order</span>
+      </button>
       <button class="btn btn-secondary" onclick="openSettingsModal()">
         <i class="fa-solid fa-gear" style="color: var(--accent-blue);"></i>
         <span>Pengaturan System</span>
@@ -789,6 +862,33 @@
     </div>
   </div>
 
+  <!-- Blacklist / Pulihkan Order Modal -->
+  <div class="modal-overlay" id="blacklistModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-rotate-left" style="color: var(--accent-orange);"></i> Pulihkan Order dari Blacklist</h3>
+        <button class="close-btn" onclick="closeBlacklistModal()">&times;</button>
+      </div>
+      <div id="blacklistContent">
+        <div class="blacklist-empty">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Memuat daftar blacklist...</p>
+        </div>
+      </div>
+      <div class="blacklist-note">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>Order yang dipulihkan akan ditarik ulang dari HMS oleh polling (&plusmn;5 detik).</span>
+      </div>
+      <div class="modal-footer" id="blacklistFooter" style="display: none;">
+        <span style="font-size: 13px; color: var(--text-muted);" id="blacklistCount"></span>
+        <button class="btn btn-primary" onclick="restoreAllBlacklist()">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Pulihkan Semua</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
@@ -1044,6 +1144,96 @@
       return String(str).replace(/[&<>"']/g, function(m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
       });
+    }
+
+    /* Blacklist / Pulihkan Order Modal Functions */
+    let blacklistItems = [];
+
+    async function openBlacklistModal() {
+      document.getElementById('blacklistModal').classList.add('active');
+      document.getElementById('blacklistContent').innerHTML = `
+        <div class="blacklist-empty">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Memuat daftar blacklist...</p>
+        </div>`;
+      document.getElementById('blacklistFooter').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/worklists/blacklist');
+        if (!res.ok) throw new Error('Gagal memuat blacklist');
+        const data = await res.json();
+        blacklistItems = data.dismissed || [];
+        renderBlacklist();
+      } catch (err) {
+        showToast('Error: ' + err.message, true);
+        document.getElementById('blacklistContent').innerHTML = `
+          <div class="blacklist-empty">
+            <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-red);"></i>
+            <p>Gagal mengambil data blacklist.</p>
+          </div>`;
+      }
+    }
+
+    function renderBlacklist() {
+      const container = document.getElementById('blacklistContent');
+      const footer = document.getElementById('blacklistFooter');
+
+      if (blacklistItems.length === 0) {
+        container.innerHTML = `
+          <div class="blacklist-empty">
+            <i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i>
+            <p>Tidak ada order di blacklist.</p>
+          </div>`;
+        footer.style.display = 'none';
+        return;
+      }
+
+      container.innerHTML = '<div class="blacklist-list">' + blacklistItems.map(acc => `
+        <div class="blacklist-item">
+          <div class="bl-info">
+            <i class="fa-solid fa-ban"></i>
+            <span class="bl-acc">${escapeHtml(acc)}</span>
+          </div>
+          <button class="btn btn-success" onclick="restoreAccession('${escapeHtml(acc)}')" style="padding: 6px 12px; font-size: 12px;">
+            <i class="fa-solid fa-rotate-left"></i> Pulihkan
+          </button>
+        </div>`).join('') + '</div>';
+
+      footer.style.display = 'flex';
+      document.getElementById('blacklistCount').textContent = blacklistItems.length + ' item di blacklist';
+    }
+
+    function closeBlacklistModal() {
+      document.getElementById('blacklistModal').classList.remove('active');
+    }
+
+    async function restoreAccession(acc) {
+      if (!confirm('Pulihkan order "' + acc + '" dari blacklist?\nOrder akan ditarik ulang dari HMS dalam ±5 detik.')) return;
+      try {
+        const res = await fetch('/api/worklists/blacklist/' + encodeURIComponent(acc), { method: 'DELETE' });
+        if (!res.ok) throw new Error('Gagal memulihkan order');
+        showToast('Order "' + acc + '" berhasil dipulihkan dari blacklist!');
+        blacklistItems = blacklistItems.filter(a => a !== acc);
+        renderBlacklist();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function restoreAllBlacklist() {
+      if (blacklistItems.length === 0) return;
+      if (!confirm('Pulihkan SEMUA (' + blacklistItems.length + ') order dari blacklist?\nSemua order akan ditarik ulang dari HMS oleh polling.')) return;
+      const itemsToRestore = [...blacklistItems];
+      let successCount = 0;
+      for (const acc of itemsToRestore) {
+        try {
+          const res = await fetch('/api/worklists/blacklist/' + encodeURIComponent(acc), { method: 'DELETE' });
+          if (res.ok) successCount++;
+        } catch (_) { /* skip individual errors */ }
+      }
+      showToast(successCount + ' dari ' + itemsToRestore.length + ' order berhasil dipulihkan!');
+      blacklistItems = blacklistItems.filter(a => !itemsToRestore.includes(a));
+      renderBlacklist();
     }
 
     document.addEventListener('DOMContentLoaded', () => {

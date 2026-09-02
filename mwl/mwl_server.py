@@ -152,10 +152,6 @@ def handle_c_find(event):
         acc = str(order.get("accessionNumber", "")).strip().lower()
         mod = str(order.get("modality", "")).strip().upper()
 
-        # CT Scan tidak boleh masuk ke aplikasi Xmaru / DICOM MWL C-FIND
-        if mod == "CT":
-            continue
-
         if patient_id_query and patient_id_query not in p_id:
             continue
         if patient_name_query and patient_name_query not in p_name:

@@ -4,6 +4,12 @@
   "IndexDirectory" : "/var/lib/orthanc/db",
   "TemporalUnstableInterval" : 60,
 
+
+  "AdvancedStorage" : {
+    "Enable" : true,
+    "NamingScheme" : "{AccessionNumber}/{StudyInstanceUID}_{SOPInstanceUID}_{UUID}.dcm"
+  },
+
   "StorageCompression" : false,
   "ConcurrentJobs" : 4,
   "MaximumStorageCacheSize" : 512,

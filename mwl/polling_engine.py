@@ -161,24 +161,15 @@ def save_order_wl(acc: str, order: dict):
 
 
 def save_order_json(acc: str, order: dict):
-    """Simpan order sebagai file JSON & DICOM .wl ke WORKLISTS_DIR (CT Scan dilewati untuk file .wl agar tidak masuk Xmaru)."""
+    """Simpan order sebagai file JSON & DICOM .wl ke WORKLISTS_DIR (semua modality termasuk CT Scan)."""
     safe_acc = acc.replace("/", "_").replace("\\", "_").replace(" ", "_")
     filename = f"order_{safe_acc}.json"
     filepath = os.path.join(WORKLISTS_DIR, filename)
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(order, f, ensure_ascii=False, indent=2)
 
-    wl_filepath = os.path.join(WORKLISTS_DIR, f"order_{safe_acc}.wl")
-    if order.get("modality") == "CT":
-        if os.path.exists(wl_filepath):
-            try:
-                os.remove(wl_filepath)
-            except Exception:
-                pass
-        print(f"[Polling] Order disimpan: {filename} (CT Scan: file .wl dilewati agar tidak masuk Xmaru) | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
-    else:
-        save_order_wl(acc, order)
-        print(f"[Polling] Order disimpan: {filename} & order_{safe_acc}.wl | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
+    save_order_wl(acc, order)
+    print(f"[Polling] Order disimpan: {filename} & order_{safe_acc}.wl | Pasien: {order['patientName']} | Modality: {order['modality']}", flush=True)
 
 
 

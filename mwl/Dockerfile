@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY mwl_server.py ./
 COPY polling_engine.py ./
+COPY backfill_worklists.py ./
 
 ENV PYTHONUNBUFFERED=1
 ENV MWL_AE_TITLE=ORTHANC

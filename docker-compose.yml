@@ -40,6 +40,7 @@ services:
       - VERBOSE_STARTUP=true
       - ORTHANC_PASSWORD=${ORTHANC_PASSWORD}
       - OSIMIS_WEB_VIEWER1_PLUGIN_ENABLED=true
+      - ADVANCED_STORAGE_PLUGIN_ENABLED=true
       - WSI_PLUGIN_ENABLED=false
       - SIMRS_WEBHOOK_URL=${SIMRS_WEBHOOK_URL:-http://192.168.188.207:8090/api/radiology/notify-stored}
     depends_on:
