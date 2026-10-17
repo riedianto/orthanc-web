@@ -7,6 +7,11 @@ worklists/order_*.json
 worklists/order_*.wl
 worklists/completed_worklist.json
 worklists/system_settings.json
+worklists/refresh_instances.json
+worklists/users.json
+
+# --- TLS CERTIFICATES (self-signed, jangan masuk repo) ---
+orthanc-auth/certs/
 
 # Tapi README.md di worklists boleh masuk
 !worklists/README.md

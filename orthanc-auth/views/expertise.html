@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isi Expertise Radiologi | Orthanc PACS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-indigo: #6366f1;
+      --accent-indigo-hover: #4f46e5;
+      --accent-green: #34d399;
+      --accent-orange: #fb923c;
+      --accent-red: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title i {
+      color: var(--accent-blue);
+      font-size: 24px;
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-indigo-hover));
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      flex-grow: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .patient-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .patient-banner .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .patient-banner .p-name {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .patient-banner .p-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .patient-banner .p-meta code {
+      color: var(--accent-blue);
+      font-family: monospace;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-indigo);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.5;
+    }
+
+    input[readonly] {
+      color: var(--accent-blue);
+      font-family: monospace;
+      font-weight: 600;
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-existing {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .badge-new {
+      background: rgba(251, 146, 60, 0.15);
+      color: var(--accent-orange);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+      display: block;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent-green);
+      color: var(--text-main);
+      padding: 14px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 420px;
+      animation: slideIn 0.3s forwards;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .hidden { display: none !important; }
+
+    /* ---------- Responsive: tablet & mobile ---------- */
+    @media (max-width: 900px) {
+      .header { padding: 12px 16px; }
+      .header-title h1 { font-size: 17px; }
+      .container { padding: 16px; }
+      .card { padding: 18px; }
+    }
+
+    @media (max-width: 640px) {
+      .header-title h1 { font-size: 16px; }
+      .header-title p { display: none; }
+      .header-title i { font-size: 20px; }
+      .container { padding: 12px; }
+      .card { padding: 14px; border-radius: 10px; }
+      .patient-banner { padding: 12px 14px; gap: 12px; }
+      .patient-banner .avatar { width: 40px; height: 40px; font-size: 17px; }
+      .patient-banner .p-name { font-size: 15px; }
+      input, select, textarea { font-size: 16px; }
+      textarea { min-height: 130px; }
+      .actions { flex-direction: column-reverse; gap: 10px; }
+      .actions .btn { width: 100%; justify-content: center; min-height: 46px; }
+      .toast-container { left: 12px; right: 12px; bottom: 12px; }
+      .toast { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-title">
+      <i class="fa-solid fa-pen-to-square"></i>
+      <div>
+        <h1>Isi Expertise / Hasil Baca</h1>
+        <p style="font-size: 12px; color: var(--text-muted);">Input hasil ekspertise radiologi ke rekam medis (tbl_radioexpert)</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card" id="mainCard">
+      <div class="empty-state" id="loadingState">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>Memuat data order radiologi...</p>
+      </div>
+
+      <div class="empty-state hidden" id="errorState">
+        <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-red);"></i>
+        <p id="errorMessage">Terjadi kesalahan.</p>
+      </div>
+
+      <div class="hidden" id="formContent">
+        <div class="patient-banner">
+          <div class="avatar"><i class="fa-solid fa-user"></i></div>
+          <div>
+            <div class="p-name" id="patientName">-</div>
+            <div class="p-meta" id="patientMeta">-</div>
+          </div>
+        </div>
+
+        <form id="expertiseForm" onsubmit="handleSave(event)">
+          <div class="form-group">
+            <label for="noradio">Nomor Order Radiologi (noradio)</label>
+            <input type="text" id="noradio" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="radiokey">Item Pemeriksaan *</label>
+            <select id="radiokey" required onchange="onItemChange()"></select>
+            <div class="hint" id="itemStatus"></div>
+          </div>
+
+          <div class="section-title">
+            <i class="fa-solid fa-stethoscope"></i> Hasil Expertise
+          </div>
+
+          <div class="form-group">
+            <label for="expertise">Expertise / Kesimpulan Bacaan *</label>
+            <textarea id="expertise" required placeholder="Tuliskan hasil bacaan / kesimpulan radiologi..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="ket1">Keterangan / Klinis</label>
+            <textarea id="ket1" placeholder="Keterangan tambahan, klinis, atau catatan..."></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" onclick="window.close()">
+              <i class="fa-solid fa-xmark"></i>
+              <span>Tutup</span>
+            </button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Simpan Expertise</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const noradioParam = (params.get('noradio') || '').trim();
+    let items = [];
+
+    function showToast(msg, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      if (isError) toast.style.borderLeftColor = 'var(--accent-red)';
+      toast.innerHTML = '<i class="fa-solid ' + (isError ? 'fa-triangle-exclamation' : 'fa-circle-check') +
+        '" style="color: ' + (isError ? 'var(--accent-red)' : 'var(--accent-green)') + ';"></i> <span>' + escapeHtml(msg) + '</span>';
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('formContent').classList.add('hidden');
+      const errState = document.getElementById('errorState');
+      document.getElementById('errorMessage').textContent = msg;
+      errState.classList.remove('hidden');
+    }
+
+    async function load() {
+      if (!noradioParam) {
+        showError('Parameter noradio tidak ditemukan. Buka halaman ini dari tombol "Isi Expertise" pada study di Orthanc.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/expertise?noradio=' + encodeURIComponent(noradioParam));
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showError(data.error || 'Order radiologi tidak ditemukan.');
+          return;
+        }
+        renderForm(data);
+      } catch (err) {
+        showError('Gagal memuat data: ' + err.message);
+      }
+    }
+
+    function renderForm(data) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      document.getElementById('formContent').classList.remove('hidden');
+
+      document.getElementById('noradio').value = data.noradio || '';
+
+      const patient = data.patient || {};
+      document.getElementById('patientName').textContent = patient.name || '(Nama pasien tidak tersedia)';
+      const metaParts = [];
+      if (patient.rm) metaParts.push('No. RM: <code>' + escapeHtml(patient.rm) + '</code>');
+      if (patient.tgl) metaParts.push('Tgl: ' + escapeHtml(patient.tgl));
+      if (patient.jam) metaParts.push(escapeHtml(patient.jam));
+      if (patient.doctor) metaParts.push('Dokter: ' + escapeHtml(patient.doctor));
+      document.getElementById('patientMeta').innerHTML = metaParts.join(' &nbsp;|&nbsp; ') || '-';
+
+      items = data.items || [];
+      const select = document.getElementById('radiokey');
+      select.innerHTML = items.map(it => {
+        const label = it.tindakan ? (it.tindakan + ' (' + it.kodetarif + ')') : it.kodetarif;
+        return '<option value="' + escapeHtml(it.radiokey) + '">' + escapeHtml(label) + '</option>';
+      }).join('');
+
+      if (items.length === 0) {
+        showError('Tidak ada item pemeriksaan pada order ini.');
+        return;
+      }
+      onItemChange();
+    }
+
+    function onItemChange() {
+      const key = document.getElementById('radiokey').value;
+      const item = items.find(i => i.radiokey === key);
+      const statusDiv = document.getElementById('itemStatus');
+      if (!item) {
+        statusDiv.innerHTML = '';
+        return;
+      }
+      document.getElementById('expertise').value = item.expertise || '';
+      document.getElementById('ket1').value = item.ket1 || '';
+
+      if (item.hasExpertise) {
+        statusDiv.innerHTML = '<span class="badge badge-existing"><i class="fa-solid fa-circle-check"></i> Sudah ada expertise — akan diperbarui</span>';
+      } else {
+        statusDiv.innerHTML = '<span class="badge badge-new"><i class="fa-solid fa-plus"></i> Belum ada expertise — akan dibuat baru</span>';
+      }
+    }
+
+    async function handleSave(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      const radiokey = document.getElementById('radiokey').value;
+      const expertise = document.getElementById('expertise').value.trim();
+      const ket1 = document.getElementById('ket1').value;
+
+      if (!radiokey) {
+        showToast('Item pemeriksaan wajib dipilih.', true);
+        return;
+      }
+      if (!expertise) {
+        showToast('Kolom expertise tidak boleh kosong.', true);
+        return;
+      }
+
+      saveBtn.disabled = true;
+      try {
+        const res = await fetch('/api/expertise', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ noradio: document.getElementById('noradio').value, radiokey: radiokey, expertise: expertise, ket1: ket1 })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan expertise');
+        showToast(data.message || 'Expertise berhasil disimpan!');
+        const item = items.find(i => i.radiokey === radiokey);
+        if (item) {
+          item.expertise = expertise;
+          item.ket1 = ket1;
+          item.hasExpertise = true;
+        }
+        onItemChange();
+      } catch (err) {
+        showToast(err.message, true);
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+/* ============================================================================
+ * OE2 (Orthanc Explorer 2) responsive layer
+ * ----------------------------------------------------------------------------
+ * Disajikan oleh orthanc-auth dan HANYA disuntikkan ke response HTML /ui/*.
+ * Tujuan: OE2 tidak punya dukungan mobile/tablet native:
+ *   - .nav-side-layout (sidebar) fixed 260px, .content margin-left: var(--nav-bar-width)
+ *   - .toggle-btn di App.vue display:none (tidak berfungsi)
+ *   - tidak ada media query di SideBar.vue
+ * Struktur terverifikasi dari source OE2:
+ *   App.vue  -> .full-page > .nav-side-layout + .content
+ *   StudyList.vue -> table.study-table > thead(.study-column-titles,
+ *                    .study-table-filters, .study-table-actions) + tbody per StudyItem
+ *   StudyItem.vue -> tbody > tr.study-row-{collapsed|expanded} > td.cut-text
+ *                    + tr labels + tr.collapse (StudyDetails)
+ *
+ * Breakpoint:
+ *   <=992px : sidebar jadi drawer off-canvas + tombol hamburger (#oe2-nav-toggle)
+ *   641-992 : study table = horizontal scroll (header sticky hilang, diterima)
+ *   <=640px : study table = kartu (label diisi JS via data-label)
+ *   >=993px : TIDAK ada perubahan (desktop seperti sebelumnya)
+ * ========================================================================== */
+
+/* --------------------------------------------------------------------------
+ * Elemen chrome (tombol + backdrop) dibuat oleh JS. Sembunyikan secara default
+ * agar tidak pernah muncul di desktop / saat JS tidak jalan.
+ * ------------------------------------------------------------------------ */
+#oe2-nav-toggle,
+#oe2-nav-backdrop {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  /* Cegah scroll horizontal tingkat halaman; scroll ditangani per-komponen. */
+  html {
+    overflow-x: hidden;
+  }
+
+  /* Beri ruang untuk tombol hamburger yang fixed di kiri atas. */
+  .content {
+    margin-left: 0 !important;
+    margin-top: 46px;
+  }
+
+  /* Sidebar -> drawer off-canvas (default tertutup). */
+  .nav-side-layout {
+    width: 280px !important;
+    z-index: 1040;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    will-change: transform;
+  }
+  html.oe2-nav-open .nav-side-layout {
+    transform: translateX(0);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Tombol hamburger. */
+  #oe2-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 6px;
+    left: 6px;
+    z-index: 1050;
+    width: 36px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--nav-side-bg-color, #f4f4f4);
+    color: var(--nav-side-color, #333);
+  }
+  #oe2-nav-toggle:focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: 1px;
+  }
+
+  /* Backdrop. */
+  #oe2-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1035;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  html.oe2-nav-open #oe2-nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Scroll horizontal tabel study (tablet). Wrapper dibuat oleh JS.
+   * Catatan: thead.sticky-top kehilangan efek sticky di rentang ini karena
+   * wrapper menjadi scroll container — trade-off yang disepakati. */
+  .oe2-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 992px) {
+  .oe2-table-scroll .study-table {
+    min-width: 880px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * HP (<=640px): study list -> kartu
+ * ------------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  /* thead jadi blok; judul kolom disembunyikan (label pindah ke tiap sel). */
+  .study-table,
+  .study-table > thead,
+  .study-table > tbody {
+    display: block;
+    width: 100%;
+    table-layout: auto;
+  }
+  .study-table > thead > tr {
+    display: block;
+    width: 100%;
+  }
+  .study-table > thead.sticky-top {
+    position: static !important;
+  }
+  .study-table > thead > tr.study-column-titles {
+    display: none;
+  }
+
+  /* Baris filter -> grid 2 kolom. */
+  .study-table > thead > tr.study-table-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+    padding: 6px;
+  }
+  .study-table > thead > tr.study-table-filters > th {
+    display: block;
+    width: auto !important;
+    max-width: none !important;
+    padding: 2px;
+    border: none;
+    text-align: left;
+  }
+
+  /* Baris aksi (multi-labels filter / select-all / search) -> menumpuk. */
+  .study-table > thead > tr.study-table-actions {
+    display: block;
+    padding: 4px 6px;
+  }
+  .study-table > thead > tr.study-table-actions > th {
+    display: block;
+    width: auto !important;
+    border: none;
+    padding: 2px;
+  }
+
+  /* Lebar kontrol filter mengikuti kolom grid. */
+  .study-table .dp__main,
+  .study-table .dp__input_wrap,
+  .study-table .dp__input {
+    width: 100% !important;
+  }
+
+  /* Tiap study (tbody) -> kartu. */
+  .study-table > tbody {
+    margin: 8px 6px;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--study-even-bg-color, var(--bs-body-bg, #fff));
+  }
+  .study-table > tbody > tr {
+    display: block;
+  }
+  .study-table > tbody > tr > td {
+    display: block;
+    width: auto !important;
+    max-width: none !important;
+    padding: 6px 10px;
+    border: none;
+    background-color: transparent !important;
+  }
+
+  /* Baris atas kartu: checkbox + ikon viewer/pdf sejajar. */
+  .study-table > tbody > tr.study-row-collapsed > td:first-child,
+  .study-table > tbody > tr.study-row-expanded > td:first-child,
+  .study-table > tbody > tr.study-row-collapsed > td.td-viewer-icon,
+  .study-table > tbody > tr.study-row-expanded > td.td-viewer-icon,
+  .study-table > tbody > tr.study-row-collapsed > td.td-pdf-icon,
+  .study-table > tbody > tr.study-row-expanded > td.td-pdf-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: auto !important;
+    padding: 4px 6px;
+  }
+
+  /* Sel data -> baris "label : nilai". */
+  .study-table > tbody > tr.study-row-collapsed > td.cut-text,
+  .study-table > tbody > tr.study-row-expanded > td.cut-text {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: none !important;
+    padding: 5px 10px;
+    text-align: right !important;
+    border-top: 1px solid var(--bs-border-color, #e9ecef);
+  }
+  .study-table > tbody > tr.study-row-collapsed > td.cut-text::before,
+  .study-table > tbody > tr.study-row-expanded > td.cut-text::before {
+    content: attr(data-label);
+    flex: 0 0 42%;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    opacity: 0.7;
+  }
+  .study-table > tbody > tr.study-row-collapsed > td.cut-text > span,
+  .study-table > tbody > tr.study-row-expanded > td.cut-text > span {
+    display: block;
+    max-width: 58%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Detail node (StudyDetails) tetap dalam kartu & tidak meluber. */
+  .study-table > tbody > tr.study-details-expanded > td {
+    display: block;
+    padding: 8px;
+    overflow-x: auto;
+  }
+
+  /* Bootstrap .collapse dipakai StudyItem untuk baris detail; pastikan baris
+   * yang tertutup benar-benar tersembunyi (aturan display:block di atas
+   * spesifisitasnya lebih tinggi dari .collapse:not(.show)). */
+  .study-table > tbody > tr.collapse:not(.show) {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Jaga-jaga: di bawah 993px tombol/backdrop tak pernah tampil bila JS salah.
+ * ------------------------------------------------------------------------ */
+@media (min-width: 993px) {
+  #oe2-nav-toggle,
+  #oe2-nav-backdrop {
+    display: none !important;
+  }
+}

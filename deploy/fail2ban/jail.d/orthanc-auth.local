@@ -1,0 +1,8 @@
+[orthanc-auth]
+enabled = true
+filter = orthanc-auth
+logpath = /simrs/orthanc-web/worklists/auth.log
+maxretry = 10
+findtime = 10m
+bantime = 1h
+action = iptables-docker
